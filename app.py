@@ -7,9 +7,13 @@ import json
 from chatterbot import ChatBot
 import requests
 from flask import Flask, request
+from chatterbot import ChatBot
+from chatterbot.trainers import ChatterBotCorpusTrainer
 
 # Create a new chat bot named Charlie
 chatbot = ChatBot("Charlie")
+chatbot.set_trainer(ChatterBotCorpusTrainer)
+chatbot.train("chatterbot.corpus.english")
 
 app = Flask(__name__)
 
@@ -34,7 +38,7 @@ def webhook():
     # endpoint for processing incoming messaging events
 
     data = request.get_json()
-    log(data)  # you may not want to log every incoming message in production, but it's good for testing
+    print(data)  # you may not want to log every incoming message in production, but it's good for testing
 
     if data["object"] == "page":
 
@@ -45,11 +49,15 @@ def webhook():
 
                     sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
-                    message_text = messaging_event["message"]["text"]  # the message's text
 
-                    # Get a response to the input "How are you?"
-                    response = chatbot.get_response(message_text)
+                if 'text' in messaging_event["message"]:
+
+                    message_text = messaging_event["message"]["text"]  # the message's text
+                    # Get a response to the input
+                    response = str(chatbot.get_response(message_text))
                     send_message(sender_id, response)
+                else:
+                    send_message(sender_id, "Oh Snap! I only understand text messages. Still Dump.")
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
@@ -68,7 +76,7 @@ def send_message(recipient_id, message_text):
     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
-        "access_token": 'EAAXnUzRjjjUBAHLPcrtxVp0bdlQBOZAzzyLLN3JtNpe6F88j4KFZAJrVy7kD6MI4v90ZADgsb0MS7gfKShmM5OzS7cORZBY4QqZCqkg4ArifdSo3v79J3ueM7qpturiHw7KJhVxveqDkvcEhq0AF6t5lUktFNDfxYvkh3TZBh7BAZDZD'
+        "access_token": 'EAAXnUzRjjjUBAJGPGWZCTfKUT1Bawf7LjUIN0ZBpcZBnLa26pSp57VAJ2u76KrZA93Q4dRcgAyZAtga0pNcVeJAhw3tskYHMQIFT0hHb8wtjZA3CHE2zm6Nzj18vT0GZCR9xcBksLawjQKZBQdSFcgE0RdJUnedl0rNYFJUmZAMJDtwZDZD'
     }
     headers = {
         "Content-Type": "application/json"

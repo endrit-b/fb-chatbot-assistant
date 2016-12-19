@@ -54,7 +54,11 @@ fi
 echo `virtualenv -p python venv`
 currentDir=`pwd`
 virtualenvPath='venv/bin/activate'
-source $currentDir/$virtualenvPath 
+source $currentDir/$virtualenvPath
 
+# Make sure pip has the latest version installed
+pip install --upgrade pip
+
+# Install requirements
 pip install -r requirements.txt
 echo "Installation complete."
